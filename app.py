@@ -61,7 +61,6 @@ def send_message(data, api):
                     print(f"connections grew to {len(all_connections)}")
 
         print("Total connections found is ",len(all_connections))
-        import pdb; pdb.set_trace()
         for index, x in enumerate(all_connections):
             print("Sending Msg to: ",x['public_id'])
             urn_id = x['urn_id']
