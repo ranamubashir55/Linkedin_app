@@ -59,18 +59,23 @@ def send_message(data, api):
                     for x in con:
                         all_connections.append({"urn_id":x.get("targetUrn").split(":")[-1],"public_id":x.get("publicIdentifier")})
                     print(f"connections grew to {len(all_connections)}")
+                    yield {"found_conn": len(all_connections)}
 
         print("Total connections found is ",len(all_connections))
+        count = 0
         for index, x in enumerate(all_connections):
             print("Sending Msg to: ",x['public_id'])
             urn_id = x['urn_id']
             res = api.send_message(recipients=[urn_id], message_body=msg)
             if res==False:
                 print("Msg sent to: ",x['public_id'])
-            yield {"sent":index+1,"total":len(all_connections)}
-
+            count = index+1
+            yield {"sent":count,"total":len(all_connections)}
+        yield {"completed":True,"sent":count,"total":len(all_connections), "found_conn": len(all_connections)}
     if linkedin_ids:
         all_people = linkedin_ids
+        count = 0
+        yield {"found_conn": len(all_people)}
         for index, x in enumerate(all_people):
             print("Sending Msg to: ",x)
             try:
@@ -79,10 +84,11 @@ def send_message(data, api):
                 res = api.send_message(recipients=[urn_id], message_body=msg)
                 if res==False:
                     print("Msg sent to: ",x)
-                    yield {"sent":index+1,"total":len(all_people)}
+                count = index+1
+                yield {"sent":count,"total":len(all_people)}
             except Exception:
                 pass
-  
+        yield {"completed":True,"sent":count,"total":len(all_people), "found_conn": len(all_people)}
 
 @app.route("/")
 def index():
@@ -96,6 +102,7 @@ def index():
 
 @socketio.on('send_message')
 def api(message):
+    # socketio.emit('update', 'ssssssssssssssssssssssssssssssssssssssssscccccc')
     data = json.loads(message)
     print(data)
     api=''
